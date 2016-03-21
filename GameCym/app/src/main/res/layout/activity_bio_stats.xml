@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.project.ingprog.gamecym.BioStats">
+
+    <ScrollView
+        android:id="@+id/bio_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/email_login_form"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/labelAgeSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="@string/age_text"
+                android:elegantTextHeight="true"
+                android:singleLine="true"
+                android:layout_alignTop="@+id/spinner_age"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="26dp"
+                android:layout_toStartOf="@+id/spinner_sex" />
+
+            <Spinner
+                android:id="@+id/spinner_age"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/labelAgeSpinner"
+                android:background="@android:drawable/btn_dropdown"
+                android:textAlignment="center"
+                android:spinnerMode="dropdown"/>
+
+            <TextView
+                android:id="@+id/labelSexSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="@string/gender_text"
+                android:elegantTextHeight="true"
+                android:singleLine="true"
+                android:layout_alignTop="@+id/spinner_sex"
+                android:layout_below="@id/labelAgeSpinner"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="26dp" />
+
+            <Spinner
+                android:id="@+id/spinner_sex"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/labelSexSpinner"
+                android:layout_below="@id/spinner_age"
+                android:background="@android:drawable/btn_dropdown"
+                android:textAlignment="center"
+                android:spinnerMode="dropdown"/>
+
+            <EditText
+                android:id="@+id/weight_edit_text"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="@string/weight_text"
+                android:layout_below="@id/spinner_sex"
+                android:inputType="numberDecimal" />
+
+            <EditText
+                android:id="@+id/height_edit_text"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:hint="@string/height_text"
+                android:layout_below="@id/weight_edit_text"
+                android:inputType="numberDecimal" />
+
+            <Button
+                android:layout_marginTop="20dp"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:text="@string/save_profile_text"
+                android:layout_below="@id/height_edit_text"
+                android:onClick="saveProfile" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/send_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
+
+</RelativeLayout>

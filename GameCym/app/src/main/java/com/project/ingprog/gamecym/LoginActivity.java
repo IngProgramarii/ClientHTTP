@@ -8,7 +8,9 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -56,13 +58,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private static final int REQUEST_READ_CONTACTS = 0;
 
     /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "foo@example.com:hello", "bar@example.com:world"
-    };
-    /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
@@ -103,6 +98,26 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        //try to login if the user has logged in recently
+        tryLoginOnPreferences();
+    }
+
+    private void tryLoginOnPreferences()
+    {
+        SharedPreferences pref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
+
+        String loginName = pref.getString(LoginActivity.this.getString(R.string.pref_username_key), "");
+        String loginPassword = pref.getString(LoginActivity.this.getString(R.string.pref_password_key), "");
+
+        if(loginName.isEmpty() || loginPassword.isEmpty())
+            return;
+        else
+        {
+            mEmailView.setText(loginName);
+            mPasswordView.setText(loginPassword);
+            attemptLogin();
+        }
     }
 
     private void populateAutoComplete() {
@@ -199,13 +214,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean isEmailValid(String email) {
-        //TODO: Replace this with your own logic
         return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() > 5;
     }
 
     /**
@@ -333,14 +346,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         @Override
         protected String doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             try {
                 JSONObject credentials = new JSONObject();
                 credentials.put("email", mEmail);
                 credentials.put("password", mPassword);
                 credentials.put("action", mAction);
 
-                String resp = post("http://192.168.1.30:11000", credentials.toString());
+                String resp = post(LoginActivity.this.getString(R.string.SERVER_ADDRESS), credentials.toString());
                 JSONObject jsonResp = new JSONObject(resp);
 
                 return jsonResp.getString("result");
@@ -362,6 +374,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success.equals("success")) {
+                SharedPreferences prefs = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+
+                editor.putString(LoginActivity.this.getString(R.string.pref_username_key), mEmail);
+                editor.putString(LoginActivity.this.getString(R.string.pref_password_key), mPassword);
+
+                editor.commit();
+
+                Intent intent = new Intent(mContext, BioStats.class);
+                intent.putExtra("email", mEmail);
+                startActivity(intent);
+
                 finish();
             } else if (success.equals("fail_email") && mAction == "login"){
                 AlertDialog.Builder registerRequest = new AlertDialog.Builder(this.mContext);
@@ -383,6 +407,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 AlertDialog registerDialog = registerRequest.create();
                 registerDialog.show();
+            }
+            else if(success.equals("bad_format"))
+            {
+                mPasswordView.setError(getString(R.string.bad_format_test));
+                mPasswordView.requestFocus();
             }
             else
             {
