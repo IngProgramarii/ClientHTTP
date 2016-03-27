@@ -20,10 +20,12 @@
     <string name="field_not_empty">This field cannot be empty</string>
     <string name="pref_username_key">UsernameLoginKey</string>
     <string name="pref_password_key">PasswordLoginKey</string>
+    <string name="pref_file_name">AppPrefs</string>
     <string name="age_text">Age</string>
     <string name="gender_text">Gender</string>
     <string name="weight_text">Weigh (kg)</string>
     <string name="height_text">Height (cm)</string>
     <string name="save_profile_text">Save profile</string>
     <string name="SERVER_ADDRESS">http://192.168.1.30:11000</string>
+    <string name="ENC_KEY">QtWr8DBhYZJzh4mC</string>
 </resources>

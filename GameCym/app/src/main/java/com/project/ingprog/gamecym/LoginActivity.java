@@ -105,7 +105,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private void tryLoginOnPreferences()
     {
-        SharedPreferences pref = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
+        String appPrefName = LoginActivity.this.getString(R.string.pref_file_name);
+        SharedPreferences pref = getSharedPreferences(appPrefName, MODE_PRIVATE);
 
         String loginName = pref.getString(LoginActivity.this.getString(R.string.pref_username_key), "");
         String loginPassword = pref.getString(LoginActivity.this.getString(R.string.pref_password_key), "");
@@ -352,8 +353,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 credentials.put("password", mPassword);
                 credentials.put("action", mAction);
 
-                String resp = post(LoginActivity.this.getString(R.string.SERVER_ADDRESS), credentials.toString());
-                JSONObject jsonResp = new JSONObject(resp);
+                String key = mContext.getString(R.string.ENC_KEY);
+
+                String resp = post(LoginActivity.this.getString(R.string.SERVER_ADDRESS), AESEncryption.encrypt(key, credentials.toString()));
+                JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return jsonResp.getString("result");
 
@@ -374,7 +377,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success.equals("success")) {
-                SharedPreferences prefs = LoginActivity.this.getPreferences(Context.MODE_PRIVATE);
+                String appPrefName = LoginActivity.this.getString(R.string.pref_file_name);
+                SharedPreferences prefs = getSharedPreferences(appPrefName, MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
 
                 editor.putString(LoginActivity.this.getString(R.string.pref_username_key), mEmail);

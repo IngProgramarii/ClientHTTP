@@ -43,6 +43,8 @@ public class BioStats extends AppCompatActivity {
         mEmail = new String();
         mEmail = this.getIntent().getStringExtra("email");
 
+        boolean modify = this.getIntent().getBooleanExtra("modify", false);
+
         ageSpinner = (Spinner)findViewById(R.id.spinner_age);
         sexSpinner = (Spinner)findViewById(R.id.spinner_sex);
         weightTextBox = (EditText)findViewById(R.id.weight_edit_text);
@@ -53,7 +55,8 @@ public class BioStats extends AppCompatActivity {
         initAgeSpinner();
         initSexSpinner();
 
-        checkIfProfileExists();
+        if(!modify)
+            checkIfProfileExists();
     }
 
     private void initAgeSpinner()
@@ -196,8 +199,11 @@ public class BioStats extends AppCompatActivity {
                 bio_info.put("email", mEmail);
                 bio_info.put("action", "profile_get");
 
-                String resp = post(BioStats.this.getString(R.string.SERVER_ADDRESS), bio_info.toString());
-                JSONObject jsonResp = new JSONObject(resp);
+                String key = BioStats.this.getString(R.string.ENC_KEY);
+                String address = BioStats.this.getString(R.string.SERVER_ADDRESS);
+
+                String resp = post(address, AESEncryption.encrypt(key, bio_info.toString()));
+                JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return  jsonResp.getString("result");
             }
@@ -284,8 +290,11 @@ public class BioStats extends AppCompatActivity {
                 bio_info.put("height", mHeight);
                 bio_info.put("action", "profile_set");
 
-                String resp = post(BioStats.this.getString(R.string.SERVER_ADDRESS), bio_info.toString());
-                JSONObject jsonResp = new JSONObject(resp);
+                String key = BioStats.this.getString(R.string.ENC_KEY);
+                String address = BioStats.this.getString(R.string.SERVER_ADDRESS);
+
+                String resp = post(address, AESEncryption.encrypt(key, bio_info.toString()));
+                JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return  jsonResp.getString("result");
             }
