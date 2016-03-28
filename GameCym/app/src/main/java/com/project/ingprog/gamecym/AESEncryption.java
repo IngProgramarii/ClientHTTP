@@ -32,7 +32,7 @@ public class AESEncryption {
 
             //return Base64.encodeBase64String(encrypted);
 
-            return android.util.Base64.encodeToString(encrypted, android.util.Base64.NO_WRAP);
+            return android.util.Base64.encodeToString(encrypted, android.util.Base64.NO_WRAP & android.util.Base64.NO_PADDING);
 
             //return new String(encrypted);
         } catch (Exception ex) {
@@ -57,7 +57,7 @@ public class AESEncryption {
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
 
             //byte[] original = cipher.doFinal(Base64.decodeBase64(encrypted.getBytes()));
-            byte[] original = cipher.doFinal(android.util.Base64.decode(encrypted.getBytes(), Base64.NO_WRAP));
+            byte[] original = cipher.doFinal(android.util.Base64.decode(encrypted.getBytes(), android.util.Base64.NO_WRAP & android.util.Base64.NO_PADDING));
             //byte[] original = cipher.doFinal(encrypted.getBytes("UTF-8"));
 
             return new String(original);
