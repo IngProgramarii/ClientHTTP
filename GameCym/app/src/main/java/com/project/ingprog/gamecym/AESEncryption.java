@@ -29,7 +29,10 @@ public class AESEncryption {
             //        + Base64.encodeBase64String(encrypted));
 
             //return Base64.encodeBase64String(encrypted);
-            return new String(encrypted);
+
+            return android.util.Base64.encodeToString(encrypted, android.util.Base64.DEFAULT);
+
+            //return new String(encrypted);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -51,9 +54,9 @@ public class AESEncryption {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
 
-            //byte[] original = cipher.doFinal(Base64.decodeBase64(encrypted));
-
-            byte[] original = cipher.doFinal(encrypted.getBytes("UTF-8"));
+            //byte[] original = cipher.doFinal(Base64.decodeBase64(encrypted.getBytes()));
+            byte[] original = cipher.doFinal(android.util.Base64.decode(encrypted.getBytes(), android.util.Base64.DEFAULT));
+            //byte[] original = cipher.doFinal(encrypted.getBytes("UTF-8"));
 
             return new String(original);
         } catch (Exception ex) {
