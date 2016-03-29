@@ -4,7 +4,7 @@ package com.project.ingprog.gamecym;
  * Created by danyh on 3/27/2016.
  */
 
-import android.util.Base64;
+import java.util.Random;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -12,9 +12,41 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AESEncryption {
 
+    public static String generateIV()
+    {
+        String iv = new String();
+        Random generator = new Random();
+
+        for (int i = 0; i < 16; i++)
+        {
+            int a = generator.nextInt(3);
+
+            switch (a)
+            {
+                //int
+                case 0:
+                    int k1 = generator.nextInt(10);
+                    iv += Integer.toString(k1);
+                    break;
+                //lowercase
+                case 1:
+                    int k2 = generator.nextInt(26) + (int)'a';
+                    iv += (char)(k2);
+                    break;
+                //uppercase
+                case 2:
+                    int k3 = generator.nextInt(26) + (int)'A';
+                    iv += (char)k3;
+                    break;
+            }
+        }
+
+        return iv;
+    }
+
     public  static String encrypt(String key, String value)
     {
-        return encrypt(key, key, value);
+        return encrypt(key, generateIV(), value);
     }
 
 
@@ -32,7 +64,8 @@ public class AESEncryption {
 
             //return Base64.encodeBase64String(encrypted);
 
-            return android.util.Base64.encodeToString(encrypted, android.util.Base64.NO_WRAP & android.util.Base64.NO_PADDING);
+            return initVector +
+                    android.util.Base64.encodeToString(encrypted, android.util.Base64.NO_WRAP & android.util.Base64.NO_PADDING);
 
             //return new String(encrypted);
         } catch (Exception ex) {
@@ -44,7 +77,10 @@ public class AESEncryption {
 
     public  static String decrypt(String key, String encrypted)
     {
-        return decrypt(key, key, encrypted);
+        String iv = encrypted.substring(0, 16);
+        String encText = encrypted.substring(16);
+
+        return decrypt(key, iv, encText);
     }
 
 

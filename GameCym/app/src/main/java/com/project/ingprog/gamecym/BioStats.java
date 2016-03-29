@@ -202,7 +202,11 @@ public class BioStats extends AppCompatActivity {
                 String key = BioStats.this.getString(R.string.ENC_KEY);
                 String address = BioStats.this.getString(R.string.SERVER_ADDRESS);
 
-                String resp = post(address, AESEncryption.encrypt(key, bio_info.toString()));
+                String allData = AESEncryption.encrypt(key, bio_info.toString());
+                JSONObject sending = new JSONObject();
+                sending.put("data", allData);
+
+                String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return  jsonResp.getString("result");
@@ -293,7 +297,12 @@ public class BioStats extends AppCompatActivity {
                 String key = BioStats.this.getString(R.string.ENC_KEY);
                 String address = BioStats.this.getString(R.string.SERVER_ADDRESS);
 
-                String resp = post(address, AESEncryption.encrypt(key, bio_info.toString()));
+
+                String allData = AESEncryption.encrypt(key, bio_info.toString());
+                JSONObject sending = new JSONObject();
+                sending.put("data", allData);
+
+                String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return  jsonResp.getString("result");

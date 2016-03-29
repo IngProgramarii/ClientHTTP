@@ -355,7 +355,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                 String key = mContext.getString(R.string.ENC_KEY);
 
-                String resp = post(LoginActivity.this.getString(R.string.SERVER_ADDRESS), AESEncryption.encrypt(key, credentials.toString()));
+                JSONObject sending = new JSONObject();
+                sending.put("data",AESEncryption.encrypt(key, credentials.toString()) );
+
+
+                String resp = post(LoginActivity.this.getString(R.string.SERVER_ADDRESS), sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
                 return jsonResp.getString("result");

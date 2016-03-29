@@ -28,4 +28,6 @@
     <string name="save_profile_text">Save profile</string>
     <string name="SERVER_ADDRESS">http://192.168.0.110:11000</string>
     <string name="ENC_KEY">QtWr8DBhYZJzh4mC</string>
+    <string name="logout">Logout</string>
+    <string name="edit_bio">Edit Biostats</string>
 </resources>
