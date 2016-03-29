@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_id": "gamecym-1d131",
+    "project_number": "417245984155",
+    "name": "GameCym"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417245984155:android:ef4ada694299414a",
+        "client_id": "android:com.project.ingprog.gamecym",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "com.project.ingprog.gamecym",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "417245984155-isd2ghkcig3nu2p6bvr4q42ki93uuqhg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.project.ingprog.gamecym",
+            "certificate_hash": "2DC374DCE3171B6473D094F924C21E041C37BDEF"
+          }
+        },
+        {
+          "client_id": "417245984155-ji06dq46prqp3dv0bdpdrgm17hcnr34p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 1,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

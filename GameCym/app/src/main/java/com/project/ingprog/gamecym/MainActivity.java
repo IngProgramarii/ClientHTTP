@@ -1,14 +1,12 @@
 package com.project.ingprog.gamecym;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,16 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void logout()
     {
-        String appPrefName = MainActivity.this.getString(R.string.pref_file_name);
-        SharedPreferences prefs = getSharedPreferences(appPrefName, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-
-        editor.remove(MainActivity.this.getString(R.string.pref_username_key));
-        editor.remove(MainActivity.this.getString(R.string.pref_password_key));
-
-        editor.commit();
-
-
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
@@ -77,11 +65,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
 
         finish();
-    }
-
-
-    public void loginOrRegister(View view)
-    {
     }
 
 }
