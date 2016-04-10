@@ -11,8 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -41,11 +39,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private SendEmailToServer mSendEmailTask = null;
+    private SendUserIdToServer mSendUserIdTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
 
@@ -57,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private boolean mResolvingConnectionFailure = false;
     private boolean mAutoStartSignInFlow = true;
     private boolean mSignInClicked = false;
+    private boolean mIsConnectToGoogle = false;
 
 
     @Override
@@ -73,16 +70,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
 
         findViewById(R.id.sign_in_button).setOnClickListener(this);
-
-        //try to login if the user has logged in recently
-        //tryLoginOnPreferences();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sign_in_button:
-                signIn();
+                mSignInClicked = true;
+                if(mIsConnectToGoogle)
+                    onConnected(null);
+                else
+                    signIn();
                 break;
             // ...
         }
@@ -98,12 +96,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onConnected(Bundle bundle)
     {
+        mSignInClicked = false;
+        mAutoStartSignInFlow = false;
+        mIsConnectToGoogle = true;
+
         showProgress(true);
-        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.LOGIN);
 
         //Send json to server with email and password
-        mSendEmailTask = new SendEmailToServer(GoogleAchievements.getUniqueId(), this);
-        mSendEmailTask.execute();
+        mSendUserIdTask = new SendUserIdToServer(GoogleAchievements.getUniqueId(), this);
+        mSendUserIdTask.execute();
     }
 
     @Override
@@ -118,6 +119,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         if (mSignInClicked || mAutoStartSignInFlow) {
             mAutoStartSignInFlow = false;
             mSignInClicked = false;
+            mIsConnectToGoogle = false;
             mResolvingConnectionFailure = true;
 
             // Attempt to resolve the connection failure using BaseGameUtils.
@@ -138,7 +140,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         @Override
     public void onConnectionSuspended(int i) {
-            // Attempt to reconnect
+        // Attempt to reconnect
+        mIsConnectToGoogle = false;
         mGoogleApiClient.connect();
     }
 
@@ -146,6 +149,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onStart() {
         super.onStart();
+        mIsConnectToGoogle = false;
         mGoogleApiClient.connect();
     }
 
@@ -153,6 +157,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onStop() {
         super.onStop();
         mGoogleApiClient.disconnect();
+        mIsConnectToGoogle = false;
     }
 
     /**
@@ -195,13 +200,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class SendEmailToServer extends AsyncTask<Void, Void, String> {
+    public class SendUserIdToServer extends AsyncTask<Void, Void, String> {
 
-        private final String mEmail;
+        private final String mUserId;
         private final Context mContext;
 
-        SendEmailToServer(String email, Context context) {
-            mEmail = email;
+        SendUserIdToServer(String userid, Context context) {
+            mUserId = userid;
             mContext = context;
         }
         public MediaType JSON
@@ -224,7 +229,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         protected String doInBackground(Void... params) {
             try {
                 JSONObject credentials = new JSONObject();
-                credentials.put("email", mEmail);
+                credentials.put("userid", mUserId);
                 credentials.put("action", "login");
 
                 String key = mContext.getString(R.string.ENC_KEY);
@@ -251,25 +256,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
         @Override
         protected void onPostExecute(final String success) {
-            mSendEmailTask = null;
+            mSendUserIdTask = null;
             showProgress(false);
 
             if (success.equals("success")) {
 
-                GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.LOGIN);
 
                 Intent intent = new Intent(mContext, BioStats.class);
-                intent.putExtra("email", mEmail);
+                intent.putExtra("userid", mUserId);
                 startActivity(intent);
-
                 finish();
+
             }
         }
 
         @Override
         protected void onCancelled() {
             showProgress(false);
-            mSendEmailTask = null;
+            mSendUserIdTask = null;
         }
     }
 }

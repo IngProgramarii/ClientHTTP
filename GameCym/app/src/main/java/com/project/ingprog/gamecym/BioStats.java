@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,6 +14,9 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,24 +30,35 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class BioStats extends AppCompatActivity {
+public class BioStats extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    String mEmail;
+    String mUserId;
     Spinner ageSpinner, sexSpinner;
     EditText weightTextBox, heightTextBox;
     View mProgressView, mBioView;
     UserSendBio mSendTask = null;
     UserGetBio mGetTask = null;
 
+    boolean mModify = false;
+
+    private GoogleApiClient mGoogleApiClient;
+
+    protected static final int REQUEST_CODE_RESOLUTION = 1;
+
+    private boolean mResolvingConnectionFailure = false;
+    private boolean mAutoStartSignInFlow = true;
+    private boolean mSignInClicked = false;
+    private boolean mIsConnectToGoogle = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bio_stats);
 
-        mEmail = new String();
-        mEmail = this.getIntent().getStringExtra("email");
+        mUserId = new String();
+        mUserId = this.getIntent().getStringExtra("userid");
 
-        boolean modify = this.getIntent().getBooleanExtra("modify", false);
+        mModify = this.getIntent().getBooleanExtra("modify", false);
 
         ageSpinner = (Spinner)findViewById(R.id.spinner_age);
         sexSpinner = (Spinner)findViewById(R.id.spinner_sex);
@@ -52,11 +67,80 @@ public class BioStats extends AppCompatActivity {
         mProgressView = findViewById(R.id.send_progress);
         mBioView = findViewById(R.id.bio_view);
 
+        mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
+        mGoogleApiClient.connect();
+
+        //login achievement
+        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST1);
+
         initAgeSpinner();
         initSexSpinner();
 
-        if(!modify)
+    }
+
+    @Override
+    public void onConnected(Bundle bundle)
+    {
+        mSignInClicked = false;
+        mAutoStartSignInFlow = false;
+        mIsConnectToGoogle = true;
+
+        if(!mModify)
             checkIfProfileExists();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        if (mResolvingConnectionFailure) {
+            // already resolving
+            return;
+        }
+
+        // if the sign-in button was clicked or if auto sign-in is enabled,
+        // launch the sign-in flow
+        if (mSignInClicked || mAutoStartSignInFlow) {
+            mAutoStartSignInFlow = false;
+            mSignInClicked = false;
+            mIsConnectToGoogle = false;
+            mResolvingConnectionFailure = true;
+
+            // Attempt to resolve the connection failure using BaseGameUtils.
+            // The R.string.signin_other_error value should reference a generic
+            // error string in your strings.xml file, such as "There was
+            // an issue with sign-in, please try again later."
+            try {
+                connectionResult.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
+            } catch (IntentSender.SendIntentException e) {
+                Utils.DebugLog("Exception while starting resolution activity");
+            }
+            mResolvingConnectionFailure = false;
+        }
+
+        // Put code here to display the sign-in button
+    }
+
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        // Attempt to reconnect
+        mIsConnectToGoogle = false;
+        mGoogleApiClient.connect();
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mIsConnectToGoogle = false;
+        mGoogleApiClient.connect();
+    }
+
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mGoogleApiClient.disconnect();
+        mIsConnectToGoogle = false;
     }
 
     private void initAgeSpinner()
@@ -90,7 +174,7 @@ public class BioStats extends AppCompatActivity {
     {
         showProgress(true);
 
-        mGetTask = new UserGetBio(mEmail, BioStats.this);
+        mGetTask = new UserGetBio(mUserId, BioStats.this);
         mGetTask.execute((Void) null);
     }
 
@@ -100,7 +184,7 @@ public class BioStats extends AppCompatActivity {
 
         if(areFieldsOk()) {
             //now send json to server
-            mSendTask = new UserSendBio(mEmail, ageSpinner.getSelectedItem().toString(), weightTextBox.getText().toString(),
+            mSendTask = new UserSendBio(mUserId, ageSpinner.getSelectedItem().toString(), weightTextBox.getText().toString(),
                     heightTextBox.getText().toString(), sexSpinner.getSelectedItem().toString(), BioStats.this);
 
             mSendTask.execute((Void) null);
@@ -167,11 +251,11 @@ public class BioStats extends AppCompatActivity {
      */
     public class UserGetBio extends AsyncTask<Void, Void, String> {
 
-        private final String mEmail;
+        private final String mUserId;
         private final Context mContext;
 
-        UserGetBio(String email, Context context) {
-            mEmail = email;
+        UserGetBio(String userid, Context context) {
+            mUserId = userid;
             mContext = context;
         }
         public MediaType JSON
@@ -196,7 +280,7 @@ public class BioStats extends AppCompatActivity {
             try
             {
                 JSONObject bio_info = new JSONObject();
-                bio_info.put("email", mEmail);
+                bio_info.put("userid", mUserId);
                 bio_info.put("action", "profile_get");
 
                 String key = BioStats.this.getString(R.string.ENC_KEY);
@@ -231,11 +315,13 @@ public class BioStats extends AppCompatActivity {
             }
             else
             {
-                Intent intent = new Intent(BioStats.this, MainActivity.class);
-                intent.putExtra("email", mEmail);
-                startActivity(intent);
+
+                 Intent intent = new Intent(BioStats.this, MainActivity.class);
+                 intent.putExtra("userid", mUserId);
+                 startActivity(intent);
 
                 finish();
+
             }
 
         }
@@ -253,12 +339,12 @@ public class BioStats extends AppCompatActivity {
      */
     public class UserSendBio extends AsyncTask<Void, Void, String> {
 
-        private final String mEmail;
+        private final String mUserId;
         private final String mAge, mWeight, mHeight, mGender;
         private final Context mContext;
 
-        UserSendBio(String email, String age, String weight, String height, String gender, Context context) {
-            mEmail = email;
+        UserSendBio(String userid, String age, String weight, String height, String gender, Context context) {
+            mUserId = userid;
             mAge = age;
             mWeight = weight;
             mHeight = height;
@@ -287,7 +373,7 @@ public class BioStats extends AppCompatActivity {
             try
             {
                 JSONObject bio_info = new JSONObject();
-                bio_info.put("email", mEmail);
+                bio_info.put("userid", mUserId);
                 bio_info.put("age", mAge);
                 bio_info.put("gender", mGender);
                 bio_info.put("weight", mWeight);
@@ -327,11 +413,13 @@ public class BioStats extends AppCompatActivity {
             }
             else
             {
+
                 Intent intent = new Intent(BioStats.this, MainActivity.class);
-                intent.putExtra("email", mEmail);
+                intent.putExtra("userid", mUserId);
                 startActivity(intent);
 
                 finish();
+
             }
 
         }

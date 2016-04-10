@@ -26,7 +26,9 @@ public class GoogleAchievements {
         THURSDAY,
         FRIDAY,
         SATURDAY,
-        SUNDAY
+        SUNDAY,
+        TEST1,
+        TEST2
     }
 
     static private Map<Achievements, String> achievementsStringMap;
@@ -50,6 +52,8 @@ public class GoogleAchievements {
         achievementsStringMap.put(Achievements.FRIDAY,          "CgkIm-uxrpIMEAIQCA");
         achievementsStringMap.put(Achievements.SATURDAY,        "CgkIm-uxrpIMEAIQCQ");
         achievementsStringMap.put(Achievements.SUNDAY,          "CgkIm-uxrpIMEAIQCg");
+        achievementsStringMap.put(Achievements.TEST1,           "CgkIm-uxrpIMEAIQDQ");
+        achievementsStringMap.put(Achievements.TEST2,           "CgkIm-uxrpIMEAIQDg");
 
     }
 
@@ -83,4 +87,3 @@ public class GoogleAchievements {
         Games.Achievements.unlock(googleApiClient, achievementsStringMap.get(achievement));
     }
 }
-`
