@@ -26,9 +26,11 @@
     <string name="weight_text">Weigh (kg)</string>
     <string name="height_text">Height (cm)</string>
     <string name="save_profile_text">Save profile</string>
-    <string name="SERVER_ADDRESS">http://188.25.238.191:11000</string>
+    <string name="SERVER_ADDRESS">http://192.168.0.110:11000</string>
     <string name="ENC_KEY">QtWr8DBhYZJzh4mC</string>
     <string name="logout">Logout</string>
     <string name="edit_bio">Edit Biostats</string>
     <string name="google_app_id">417245984155</string>
+    <string name="title_activity_schedule">ScheduleActivity</string>
+    <string name="day_text">Day</string>
 </resources>

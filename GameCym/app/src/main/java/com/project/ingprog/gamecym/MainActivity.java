@@ -41,8 +41,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
         mGoogleApiClient.connect();
 
-        //biostats achievement
-        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST2);
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -62,6 +60,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             case R.id.action_logout:
                 logout();
                 return true;
+
+            case R.id.action_viewschedule:
+                goToScheduleActivity();
+                return true;
+
 
             default:
                 // If we got here, the user's action was not recognized.
@@ -89,11 +92,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         finish();
     }
 
+    public void goToScheduleActivity()
+    {
+        Intent intent = new Intent(MainActivity.this, ScheduleActivity.class);
+        intent.putExtra("userid", mUserId);
+
+        startActivity(intent);
+
+        finish();
+    }
+
     @Override
     public void onConnected(Bundle bundle) {
         mSignInClicked = false;
         mAutoStartSignInFlow = false;
         mIsConnectToGoogle = true;
+
+
+        //biostats achievement
+        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST2);
     }
 
     @Override
