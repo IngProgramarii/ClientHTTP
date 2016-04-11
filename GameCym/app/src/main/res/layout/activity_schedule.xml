@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.project.ingprog.gamecym.ScheduleActivity">
+    tools:context="com.project.ingprog.gamecym.ScheduleActivity"
+    tools:showIn="@layout/content_schedule">
 
 
     <ScrollView
@@ -59,7 +60,34 @@
         android:textAlignment="center"
         android:spinnerMode="dropdown"/>
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/ScheduleText"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text=""
+            android:elegantTextHeight="true"
+            android:singleLine="true"
+            android:layout_alignBottom ="@+id/spinner_day"
+            android:layout_alignParentStart="true"
+            android:textSize="20dp"
+            android:layout_marginTop="20dp" />
+
+            <Button
+                android:id="@+id/edit_schedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="EditScheduleAction"
+                android:text="Edit"/>
+
+            <Button
+                android:id="@+id/delete_schedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="DeleteScheduleAction"
+                android:text="Delete"/>
+
+        </LinearLayout>
     </ScrollView>
 
     <ProgressBar

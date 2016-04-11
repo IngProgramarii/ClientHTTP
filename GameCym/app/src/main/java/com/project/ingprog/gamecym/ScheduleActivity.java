@@ -16,10 +16,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,6 +50,8 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
     private boolean mIsConnectToGoogle = false;
 
     GetExercisesAvailable mGetExercisesTask = null;
+    GetDaySchedule mGetDayScheduleTask = null;
+    SendDeleteSchedule mDeleteScheduleTask = null;
 
     private String[] days;
 
@@ -81,7 +85,9 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         daySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
+                showProgress(true);
+                mGetDayScheduleTask = new GetDaySchedule(mUserId, days[position], ScheduleActivity.this);
+                mGetDayScheduleTask.execute((Void) null);
             }
 
             @Override
@@ -96,6 +102,18 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
 
         initDaySpinner();
     }
+
+    public void DeleteScheduleAction(View view)
+    {
+        mDeleteScheduleTask = new SendDeleteSchedule(mUserId, days[daySpinner.getSelectedItemPosition()], ScheduleActivity.this);
+        mDeleteScheduleTask.execute((Void) null);
+    }
+
+    public void EditScheduleAction(View view)
+    {
+
+    }
+
 
     private  void initDaySpinner()
     {
@@ -338,7 +356,14 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
                 String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
-                return  jsonResp.getString("exercises");
+                if(jsonResp.getString("result").equals("success"))
+                {
+                    return jsonResp.getJSONObject("schedule").toString();
+                }
+                else
+                {
+                    return "";
+                }
             }
             catch (JSONException jsonEx)
             {
@@ -351,17 +376,36 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         }
 
         @Override
-        protected void onPostExecute(final String exercises) {
+        protected void onPostExecute(final String objects) {
 
-            mGetExercisesTask = null;
-            if(exercises.isEmpty())
+            mGetDayScheduleTask = null;
+            if(objects.isEmpty())
             {
+                ((TextView)(findViewById(R.id.ScheduleText))).setText("");
                 showProgress(false);
             }
             else
             {
-                allExercises = new ArrayList<String>();
-                allExercises.addAll(Arrays.asList(exercises.split(";")));
+                String newText = "";
+                try {
+                    JSONArray jsonArray = new JSONArray(objects);
+
+                    for(int i = 0; i < jsonArray.length(); i++)
+                    {
+                        JSONObject obj = jsonArray.getJSONObject(i);
+                        newText += "Exercise: " + obj.getString("exercise") + "\n";
+                        newText += "Reps:" + obj.getString("reps") + "\n";
+                        newText += "Comment: " + obj.getString("comment") + "\n\n";
+                    }
+
+                    ((TextView)(findViewById(R.id.ScheduleText))).setText(newText);
+
+                }
+                catch (JSONException jsonEx)
+                {
+                    ((TextView)(findViewById(R.id.ScheduleText))).setText("");
+                }
+
                 showProgress(false);
             }
 
@@ -369,10 +413,94 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
 
         @Override
         protected void onCancelled() {
-            mGetExercisesTask = null;
+            mGetDayScheduleTask = null;
             showProgress(false);
         }
     }
 
+    public class SendDeleteSchedule extends AsyncTask<Void, Void, String> {
+
+        private final Context mContext;
+        private final String mUserId;
+        private final String mDay;
+
+        SendDeleteSchedule(String userid, String day, Context context) {
+            mContext = context;
+            mUserId = userid;
+            mDay = day;
+        }
+
+        public MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+
+        OkHttpClient client = new OkHttpClient();
+
+        String post(String url, String json) throws IOException {
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            try
+            {
+                JSONObject json = new JSONObject();
+                json.put("userid", mUserId);
+                json.put("day", mDay);
+                json.put("action", "schedule_delete");
+
+                String key = ScheduleActivity.this.getString(R.string.ENC_KEY);
+                String address = ScheduleActivity.this.getString(R.string.SERVER_ADDRESS);
+
+                String allData = AESEncryption.encrypt(key, json.toString());
+                JSONObject sending = new JSONObject();
+                sending.put("data", allData);
+
+                String resp = post(address, sending.toString());
+                JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
+
+                return jsonResp.getString("success");
+
+            }
+            catch (JSONException jsonEx)
+            {
+                return  "fail" ;
+            }
+            catch (IOException ioEx)
+            {
+                return "fail";
+            }
+        }
+
+        @Override
+        protected void onPostExecute(final String objects) {
+
+            mDeleteScheduleTask = null;
+            if(objects.isEmpty())
+            {
+                ((TextView)(findViewById(R.id.ScheduleText))).setText("");
+                showProgress(false);
+            }
+            else
+            {
+                ((TextView)(findViewById(R.id.ScheduleText))).setText("");
+                showProgress(false);
+            }
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            mDeleteScheduleTask = null;
+            showProgress(false);
+        }
+    }
 
 }
