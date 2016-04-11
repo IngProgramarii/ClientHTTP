@@ -70,6 +70,8 @@ public class BioStats extends AppCompatActivity implements GoogleApiClient.Conne
         mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
         mGoogleApiClient.connect();
 
+        //login achievement
+        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST1);
 
         initAgeSpinner();
         initSexSpinner();
@@ -82,10 +84,6 @@ public class BioStats extends AppCompatActivity implements GoogleApiClient.Conne
         mSignInClicked = false;
         mAutoStartSignInFlow = false;
         mIsConnectToGoogle = true;
-
-
-        //login achievement
-        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST1);
 
         if(!mModify)
             checkIfProfileExists();
