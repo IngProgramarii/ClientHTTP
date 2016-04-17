@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -52,12 +53,25 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
     GetExercisesAvailable mGetExercisesTask = null;
     GetDaySchedule mGetDayScheduleTask = null;
     SendDeleteSchedule mDeleteScheduleTask = null;
+    SendEditSchedule mEditScheduleTask = null;
 
     private String[] days;
 
     ArrayList<String> allExercises;
+    ArrayList<ScheduleObject> allScheduleItems;
 
     Spinner daySpinner;
+
+    Spinner exerciseSpinner;
+    EditText commentEdit, repsEdit;
+
+    public class ScheduleObject
+    {
+        public String exercise;
+        public int reps;
+        public String comment;
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +88,21 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         allExercises = null;
+        allScheduleItems = null;
 
         mUserId = new String();
         mUserId = this.getIntent().getStringExtra("userid");
 
         mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
         mGoogleApiClient.connect();
+
+        exerciseSpinner = (Spinner)findViewById(R.id.spinner_exercise_types);
+        commentEdit = (EditText)findViewById(R.id.ex_comments);
+        repsEdit = (EditText)findViewById(R.id.reps_edittext);
+
+        exerciseSpinner.setVisibility(View.GONE);
+        commentEdit.setVisibility(View.GONE);
+        repsEdit.setVisibility(View.GONE);
 
         daySpinner = (Spinner)findViewById(R.id.spinner_day);
         daySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -111,9 +134,71 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
 
     public void EditScheduleAction(View view)
     {
+        ((TextView)(findViewById(R.id.ScheduleText))).setText("");
 
+        view.setVisibility(View.GONE);
+        findViewById(R.id.delete_schedule).setVisibility(View.GONE);
+
+        findViewById(R.id.save_schedule).setVisibility(View.VISIBLE);
+        findViewById(R.id.cancel_edit).setVisibility(View.VISIBLE);
+
+
+        exerciseSpinner.setVisibility(View.VISIBLE);
+        commentEdit.setVisibility(View.VISIBLE);
+        repsEdit.setVisibility(View.VISIBLE);
+
+        allScheduleItems = new ArrayList<ScheduleObject>();
     }
 
+    public void AddMoreScheduleAction(View view)
+    {
+        ScheduleObject so = new ScheduleObject();
+        so.exercise = exerciseSpinner.getSelectedItem().toString();
+        so.reps = Integer.parseInt(repsEdit.getText().toString());
+        so.comment = commentEdit.getText().toString();
+
+        allScheduleItems.add(so);
+
+        exerciseSpinner.setSelection(0);
+        repsEdit.setText(0);
+        commentEdit.setText("");
+    }
+
+
+    public  void CancelEditScheduleAction(View view)
+    {
+
+        view.setVisibility(View.GONE);
+        findViewById(R.id.delete_schedule).setVisibility(View.VISIBLE);
+
+        findViewById(R.id.save_schedule).setVisibility(View.GONE);
+        findViewById(R.id.edit_schedule).setVisibility(View.VISIBLE);
+
+
+        exerciseSpinner.setVisibility(View.GONE);
+        commentEdit.setVisibility(View.GONE);
+        repsEdit.setVisibility(View.GONE);
+
+        showProgress(true);
+        mGetDayScheduleTask = new GetDaySchedule(mUserId, days[daySpinner.getSelectedItemPosition()], ScheduleActivity.this);
+        mGetDayScheduleTask.execute((Void) null);
+
+        allScheduleItems = null;
+    }
+
+    public void SaveScheduleAction(View view)
+    {
+        ScheduleObject so = new ScheduleObject();
+        so.exercise = exerciseSpinner.getSelectedItem().toString();
+        so.reps = Integer.parseInt(repsEdit.getText().toString());
+        so.comment = commentEdit.getText().toString();
+
+        allScheduleItems.add(so);
+
+        showProgress(true);
+        mEditScheduleTask = new SendEditSchedule(mUserId, days[daySpinner.getSelectedItemPosition()], ScheduleActivity.this);
+        mEditScheduleTask.execute((Void) null);
+    }
 
     private  void initDaySpinner()
     {
@@ -251,7 +336,6 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
             return response.body().string();
         }
 
-
         @Override
         protected String doInBackground(Void... params) {
 
@@ -295,6 +379,10 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
             {
                 allExercises = new ArrayList<String>();
                 allExercises.addAll(Arrays.asList(exercises.split(";")));
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_dropdown_item, allExercises);
+                exerciseSpinner.setAdapter(adapter);
+
                 showProgress(false);
             }
 
@@ -381,7 +469,7 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
             mGetDayScheduleTask = null;
             if(objects.isEmpty())
             {
-                ((TextView)(findViewById(R.id.ScheduleText))).setText("");
+                ((TextView)(findViewById(R.id.ScheduleText))).setText("No exercises set");
                 showProgress(false);
             }
             else
@@ -398,12 +486,15 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
                         newText += "Comment: " + obj.getString("comment") + "\n\n";
                     }
 
+                    if(newText.isEmpty())
+                        newText = "No exercises set";
+
                     ((TextView)(findViewById(R.id.ScheduleText))).setText(newText);
 
                 }
                 catch (JSONException jsonEx)
                 {
-                    ((TextView)(findViewById(R.id.ScheduleText))).setText("");
+                    ((TextView)(findViewById(R.id.ScheduleText))).setText("No exericses set");
                 }
 
                 showProgress(false);
@@ -499,6 +590,104 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         @Override
         protected void onCancelled() {
             mDeleteScheduleTask = null;
+            showProgress(false);
+        }
+    }
+
+    public class SendEditSchedule extends AsyncTask<Void, Void, String> {
+
+        private final Context mContext;
+        private final String mUserId;
+        private final String mDay;
+
+        SendEditSchedule(String userid, String day, Context context) {
+            mContext = context;
+            mUserId = userid;
+            mDay = day;
+        }
+
+        public MediaType JSON
+                = MediaType.parse("application/json; charset=utf-8");
+
+        OkHttpClient client = new OkHttpClient();
+
+        String post(String url, String json) throws IOException {
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+
+
+        @Override
+        protected String doInBackground(Void... params) {
+
+            try
+            {
+                //TODO: take all exercises, reps and comments, pack them into a jarray and mail 'em
+                JSONArray all_array = new JSONArray();
+
+                for (int i = 0; i < allScheduleItems.size(); i++)
+                {
+                    JSONObject jobj = new JSONObject();
+                    jobj.put("exercise", allScheduleItems.get(i).exercise);
+                    jobj.put("reps", allScheduleItems.get(i).reps);
+                    jobj.put("comment", allScheduleItems.get(i).comment);
+
+                    all_array.put(jobj);
+                }
+
+                JSONObject json = new JSONObject();
+                json.put("userid", mUserId);
+                json.put("day", mDay);
+                json.put("exercises", all_array);
+                json.put("action", "schedule_edit");
+
+                String key = ScheduleActivity.this.getString(R.string.ENC_KEY);
+                String address = ScheduleActivity.this.getString(R.string.SERVER_ADDRESS);
+
+                String allData = AESEncryption.encrypt(key, json.toString());
+                JSONObject sending = new JSONObject();
+                sending.put("data", allData);
+
+                String resp = post(address, sending.toString());
+                JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
+
+                return jsonResp.getString("success");
+
+            }
+            catch (JSONException jsonEx)
+            {
+                return  "fail" ;
+            }
+            catch (IOException ioEx)
+            {
+                return "fail";
+            }
+        }
+
+        @Override
+        protected void onPostExecute(final String objects) {
+
+            //TODO: implement proper post execute code
+            mEditScheduleTask = null;
+            if(objects.isEmpty())
+            {
+                showProgress(false);
+            }
+            else
+            {
+                showProgress(false);
+            }
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            mEditScheduleTask = null;
             showProgress(false);
         }
     }
