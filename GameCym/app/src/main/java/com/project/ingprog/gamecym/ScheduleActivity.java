@@ -100,6 +100,14 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         commentEdit = (EditText)findViewById(R.id.ex_comments);
         repsEdit = (EditText)findViewById(R.id.reps_edittext);
 
+        findViewById(R.id.edit_schedule).setVisibility(View.VISIBLE);
+        findViewById(R.id.delete_schedule).setVisibility(View.VISIBLE);
+
+
+        findViewById(R.id.save_schedule).setVisibility(View.GONE);
+        findViewById(R.id.cancel_edit).setVisibility(View.GONE);
+        findViewById(R.id.add_more).setVisibility(View.GONE);
+
         exerciseSpinner.setVisibility(View.GONE);
         commentEdit.setVisibility(View.GONE);
         repsEdit.setVisibility(View.GONE);
@@ -137,10 +145,14 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         ((TextView)(findViewById(R.id.ScheduleText))).setText("");
 
         view.setVisibility(View.GONE);
+
+        findViewById(R.id.edit_schedule).setVisibility(View.GONE);
         findViewById(R.id.delete_schedule).setVisibility(View.GONE);
 
+        findViewById(R.id.add_more).setVisibility(View.VISIBLE);
         findViewById(R.id.save_schedule).setVisibility(View.VISIBLE);
         findViewById(R.id.cancel_edit).setVisibility(View.VISIBLE);
+
 
 
         exerciseSpinner.setVisibility(View.VISIBLE);
@@ -160,7 +172,7 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         allScheduleItems.add(so);
 
         exerciseSpinner.setSelection(0);
-        repsEdit.setText(0);
+        repsEdit.setText("");
         commentEdit.setText("");
     }
 
@@ -192,6 +204,7 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         so.exercise = exerciseSpinner.getSelectedItem().toString();
         so.reps = Integer.parseInt(repsEdit.getText().toString());
         so.comment = commentEdit.getText().toString();
+
 
         allScheduleItems.add(so);
 
