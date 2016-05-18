@@ -112,6 +112,8 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
         commentEdit.setVisibility(View.GONE);
         repsEdit.setVisibility(View.GONE);
 
+        ((TextView)(findViewById(R.id.ScheduleText))).setSingleLine(false);
+
         daySpinner = (Spinner)findViewById(R.id.spinner_day);
         daySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -459,7 +461,7 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
 
                 if(jsonResp.getString("result").equals("success"))
                 {
-                    return jsonResp.getJSONObject("schedule").toString();
+                    return jsonResp.getJSONArray("schedule").toString();
                 }
                 else
                 {
@@ -494,8 +496,8 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
                     for(int i = 0; i < jsonArray.length(); i++)
                     {
                         JSONObject obj = jsonArray.getJSONObject(i);
-                        newText += "Exercise: " + obj.getString("exercise") + "\n";
-                        newText += "Reps:" + obj.getString("reps") + "\n";
+                        newText += "Exercise: " + obj.getString("exercise_name") + "\n";
+                        newText += "Reps:" + obj.getString("rep") + "\n";
                         newText += "Comment: " + obj.getString("comment") + "\n\n";
                     }
 
