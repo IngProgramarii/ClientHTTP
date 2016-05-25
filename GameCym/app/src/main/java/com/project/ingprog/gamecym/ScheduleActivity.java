@@ -5,11 +5,9 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,9 +16,6 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,19 +31,10 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class ScheduleActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class ScheduleActivity extends BaseActivityClass {
 
     String mUserId;
-    private GoogleApiClient mGoogleApiClient;
-
-    protected static final int REQUEST_CODE_RESOLUTION = 1;
-
     View mProgressView, mScheduleView;
-
-    private boolean mResolvingConnectionFailure = false;
-    private boolean mAutoStartSignInFlow = true;
-    private boolean mSignInClicked = false;
-    private boolean mIsConnectToGoogle = false;
 
     GetExercisesAvailable mGetExercisesTask = null;
     GetDaySchedule mGetDayScheduleTask = null;
@@ -92,9 +78,6 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
 
         mUserId = new String();
         mUserId = this.getIntent().getStringExtra("userid");
-
-        mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
-        mGoogleApiClient.connect();
 
         exerciseSpinner = (Spinner)findViewById(R.id.spinner_exercise_types);
         commentEdit = (EditText)findViewById(R.id.ex_comments);
@@ -279,54 +262,6 @@ public class ScheduleActivity extends AppCompatActivity implements GoogleApiClie
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
             mScheduleView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
-    }
-
-    @Override
-    public void onConnected(Bundle bundle) {
-        mSignInClicked = false;
-        mAutoStartSignInFlow = false;
-        mIsConnectToGoogle = true;
-
-
-        //biostats achievement
-        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST2);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-        // Attempt to reconnect
-        mIsConnectToGoogle = false;
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (mResolvingConnectionFailure) {
-            // already resolving
-            return;
-        }
-
-        // if the sign-in button was clicked or if auto sign-in is enabled,
-        // launch the sign-in flow
-        if (mSignInClicked || mAutoStartSignInFlow) {
-            mAutoStartSignInFlow = false;
-            mSignInClicked = false;
-            mIsConnectToGoogle = false;
-            mResolvingConnectionFailure = true;
-
-            // Attempt to resolve the connection failure using BaseGameUtils.
-            // The R.string.signin_other_error value should reference a generic
-            // error string in your strings.xml file, such as "There was
-            // an issue with sign-in, please try again later."
-            try {
-                connectionResult.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
-            } catch (IntentSender.SendIntentException e) {
-                Utils.DebugLog("Exception while starting resolution activity");
-            }
-            mResolvingConnectionFailure = false;
-        }
-
     }
 
     public class GetExercisesAvailable extends AsyncTask<Void, Void, String> {
