@@ -169,6 +169,7 @@ public class ScheduleActivity extends BaseActivityClass {
         findViewById(R.id.delete_schedule).setVisibility(View.VISIBLE);
 
         findViewById(R.id.save_schedule).setVisibility(View.GONE);
+        findViewById(R.id.add_more).setVisibility(View.GONE);
         findViewById(R.id.edit_schedule).setVisibility(View.VISIBLE);
 
 
@@ -579,7 +580,6 @@ public class ScheduleActivity extends BaseActivityClass {
 
             try
             {
-                //TODO: take all exercises, reps and comments, pack them into a jarray and mail 'em
                 JSONArray all_array = new JSONArray();
 
                 for (int i = 0; i < allScheduleItems.size(); i++)
@@ -634,6 +634,8 @@ public class ScheduleActivity extends BaseActivityClass {
             {
                 showProgress(false);
             }
+
+            findViewById(R.id.cancel_edit).callOnClick();
 
         }
 
