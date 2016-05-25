@@ -433,7 +433,9 @@ public class ScheduleActivity extends BaseActivityClass {
                         JSONObject obj = jsonArray.getJSONObject(i);
                         newText += "Exercise: " + obj.getString("exercise_name") + "\n";
                         newText += "Reps:" + obj.getString("rep") + "\n";
-                        newText += "Comment: " + obj.getString("comment") + "\n\n";
+
+                        if(!obj.getString("comment").isEmpty())
+                            newText += "Comment: " + obj.getString("comment") + "\n\n";
                     }
 
                     if(newText.isEmpty())
