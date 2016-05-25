@@ -5,15 +5,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +24,7 @@ import okhttp3.Response;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener
+public class LoginActivity extends BaseActivityClass
 {
     /**
      * Request code for auto Google Play Services error resolution.
@@ -45,16 +40,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private View mProgressView;
     private View mLoginFormView;
 
-    private GoogleApiClient mGoogleApiClient;
-
-
-    private static int RC_SIGN_IN = 9001;
-
-    private boolean mResolvingConnectionFailure = false;
-    private boolean mAutoStartSignInFlow = true;
-    private boolean mSignInClicked = false;
-    private boolean mIsConnectToGoogle = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +51,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mProgressView = (View)this.findViewById(R.id.login_progress);
 
         Utils.DebugLog("Before calling getGoogleApiClient");
-
-        mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
 
         findViewById(R.id.sign_in_button).setOnClickListener(this);
     }
@@ -87,62 +70,19 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void signIn() {
-        //Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(GoogleAchievements.googleApiClient);
-        //startActivityForResult(signInIntent, RC_SIGN_IN);
-
         mGoogleApiClient.connect();
     }
 
+
     @Override
-    public void onConnected(Bundle bundle)
-    {
-        mSignInClicked = false;
-        mAutoStartSignInFlow = false;
-        mIsConnectToGoogle = true;
+    public void onConnected(Bundle bundle) {
+        super.onConnected(bundle);
 
         showProgress(true);
 
         //Send json to server with email and password
         mSendUserIdTask = new SendUserIdToServer(GoogleAchievements.getUniqueId(), this);
         mSendUserIdTask.execute();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (mResolvingConnectionFailure) {
-            // already resolving
-            return;
-        }
-
-        // if the sign-in button was clicked or if auto sign-in is enabled,
-        // launch the sign-in flow
-        if (mSignInClicked || mAutoStartSignInFlow) {
-            mAutoStartSignInFlow = false;
-            mSignInClicked = false;
-            mIsConnectToGoogle = false;
-            mResolvingConnectionFailure = true;
-
-            // Attempt to resolve the connection failure using BaseGameUtils.
-            // The R.string.signin_other_error value should reference a generic
-            // error string in your strings.xml file, such as "There was
-            // an issue with sign-in, please try again later."
-             try {
-            connectionResult.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
-            } catch (IntentSender.SendIntentException e) {
-            Utils.DebugLog("Exception while starting resolution activity");
-            }
-            mResolvingConnectionFailure = false;
-        }
-
-        // Put code here to display the sign-in button
-    }
-
-
-        @Override
-    public void onConnectionSuspended(int i) {
-        // Attempt to reconnect
-        mIsConnectToGoogle = false;
-        mGoogleApiClient.connect();
     }
 
 

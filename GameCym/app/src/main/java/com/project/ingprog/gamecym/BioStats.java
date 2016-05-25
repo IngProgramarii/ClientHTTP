@@ -5,18 +5,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +25,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class BioStats extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class BioStats extends BaseActivityClass {
 
     String mUserId;
     Spinner ageSpinner, sexSpinner;
@@ -40,16 +35,6 @@ public class BioStats extends AppCompatActivity implements GoogleApiClient.Conne
     UserGetBio mGetTask = null;
 
     boolean mModify = false;
-
-    private GoogleApiClient mGoogleApiClient;
-
-    protected static final int REQUEST_CODE_RESOLUTION = 1;
-
-    private boolean mResolvingConnectionFailure = false;
-    private boolean mAutoStartSignInFlow = true;
-    private boolean mSignInClicked = false;
-    private boolean mIsConnectToGoogle = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,10 +52,6 @@ public class BioStats extends AppCompatActivity implements GoogleApiClient.Conne
         mProgressView = findViewById(R.id.send_progress);
         mBioView = findViewById(R.id.bio_view);
 
-        mGoogleApiClient = GoogleAchievements.getGoogleApiClient(this);
-        mGoogleApiClient.connect();
-
-
         initAgeSpinner();
         initSexSpinner();
 
@@ -79,54 +60,13 @@ public class BioStats extends AppCompatActivity implements GoogleApiClient.Conne
     @Override
     public void onConnected(Bundle bundle)
     {
-        mSignInClicked = false;
-        mAutoStartSignInFlow = false;
-        mIsConnectToGoogle = true;
-
+        super.onConnected(bundle);
 
         //login achievement
         GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST1);
 
         if(!mModify)
             checkIfProfileExists();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-        if (mResolvingConnectionFailure) {
-            // already resolving
-            return;
-        }
-
-        // if the sign-in button was clicked or if auto sign-in is enabled,
-        // launch the sign-in flow
-        if (mSignInClicked || mAutoStartSignInFlow) {
-            mAutoStartSignInFlow = false;
-            mSignInClicked = false;
-            mIsConnectToGoogle = false;
-            mResolvingConnectionFailure = true;
-
-            // Attempt to resolve the connection failure using BaseGameUtils.
-            // The R.string.signin_other_error value should reference a generic
-            // error string in your strings.xml file, such as "There was
-            // an issue with sign-in, please try again later."
-            try {
-                connectionResult.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
-            } catch (IntentSender.SendIntentException e) {
-                Utils.DebugLog("Exception while starting resolution activity");
-            }
-            mResolvingConnectionFailure = false;
-        }
-
-        // Put code here to display the sign-in button
-    }
-
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        // Attempt to reconnect
-        mIsConnectToGoogle = false;
-        mGoogleApiClient.connect();
     }
 
 
