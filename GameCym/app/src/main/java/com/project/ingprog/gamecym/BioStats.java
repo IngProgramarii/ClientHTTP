@@ -63,7 +63,7 @@ public class BioStats extends BaseActivityClass {
         super.onConnected(bundle);
 
         //login achievement
-        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.TEST1);
+        GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.BIOSTATS);
 
         if(!mModify)
             checkIfProfileExists();
@@ -355,6 +355,7 @@ public class BioStats extends BaseActivityClass {
             }
             else
             {
+                GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.BIOSTATS);
 
                 Intent intent = new Intent(BioStats.this, MainActivity.class);
                 intent.putExtra("userid", mUserId);

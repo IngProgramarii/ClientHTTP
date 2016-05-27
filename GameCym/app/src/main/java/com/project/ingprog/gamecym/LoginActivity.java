@@ -201,6 +201,7 @@ public class LoginActivity extends BaseActivityClass
 
             if (success.equals("success")) {
 
+                GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.LOGIN);
 
                 Intent intent = new Intent(mContext, BioStats.class);
                 intent.putExtra("userid", mUserId);
