@@ -1,8 +1,12 @@
 package com.project.ingprog.gamecym;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
@@ -141,6 +145,44 @@ public class MainActivity extends BaseActivityClass {
         finish();
     }
 
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        final View mScheduleView = findViewById(R.id.scrollView);
+        final View mProgressView = findViewById(R.id.main_progress);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mScheduleView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mScheduleView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mScheduleView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mScheduleView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
 
     public class SendDoneSchedule extends AsyncTask<Void, Void, String> {
 
@@ -215,19 +257,19 @@ public class MainActivity extends BaseActivityClass {
             if(objects.isEmpty())
             {
                 //((TextView)(findViewById(R.id.ScheduleText))).setText("");
-                //showProgress(false);
+                showProgress(false);
             }
             else
             {
                 //((TextView)(findViewById(R.id.ScheduleText))).setText("");
-                //showProgress(false);
+                showProgress(false);
             }
 
         }
 
         @Override
         protected void onCancelled() {
-            //showProgress(false);
+            showProgress(false);
         }
     }
 
@@ -312,7 +354,7 @@ public class MainActivity extends BaseActivityClass {
                 tv.setGravity(Gravity.CENTER);
                 ll.addView(tv);
 
-                //showProgress(false);
+                showProgress(false);
             }
             else
             {
@@ -343,7 +385,7 @@ public class MainActivity extends BaseActivityClass {
                                    public void onClick(View view)
                                    {
                                        Button bttn = (Button)view;
-                                       //showProgress(true)
+                                       showProgress(true);
 
                                        SendDoneSchedule sds = new SendDoneSchedule(mUserId,
                                                mDay, Integer.parseInt(bttn.getTag().toString()),
@@ -380,7 +422,7 @@ public class MainActivity extends BaseActivityClass {
                     ll.addView(tv);
                 }
 
-                //showProgress(false);
+                showProgress(false);
             }
 
         }
@@ -388,7 +430,7 @@ public class MainActivity extends BaseActivityClass {
         @Override
         protected void onCancelled() {
             mGetDayScheduleTask = null;
-            //showProgress(false);
+            showProgress(false);
         }
     }
 
