@@ -139,7 +139,6 @@ public class ScheduleActivity extends BaseActivityClass {
         findViewById(R.id.cancel_edit).setVisibility(View.VISIBLE);
 
 
-
         exerciseSpinner.setVisibility(View.VISIBLE);
         commentEdit.setVisibility(View.VISIBLE);
         repsEdit.setVisibility(View.VISIBLE);
@@ -147,8 +146,21 @@ public class ScheduleActivity extends BaseActivityClass {
         allScheduleItems = new ArrayList<ScheduleObject>();
     }
 
+    private boolean CheckReps()
+    {
+        if(repsEdit.getText().toString().isEmpty())
+        {
+            repsEdit.setError("This field can't be empty");
+            return false;
+        }
+        return true;
+    }
+
     public void AddMoreScheduleAction(View view)
     {
+        if(!CheckReps())
+            return;
+
         ScheduleObject so = new ScheduleObject();
         so.exercise = exerciseSpinner.getSelectedItem().toString();
         so.reps = Integer.parseInt(repsEdit.getText().toString());
@@ -186,6 +198,9 @@ public class ScheduleActivity extends BaseActivityClass {
 
     public void SaveScheduleAction(View view)
     {
+        if(!CheckReps())
+            return;
+
         ScheduleObject so = new ScheduleObject();
         so.exercise = exerciseSpinner.getSelectedItem().toString();
         so.reps = Integer.parseInt(repsEdit.getText().toString());
@@ -510,7 +525,7 @@ public class ScheduleActivity extends BaseActivityClass {
                 String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
-                return jsonResp.getString("success");
+                return jsonResp.getString("result");
 
             }
             catch (JSONException jsonEx)
@@ -608,7 +623,7 @@ public class ScheduleActivity extends BaseActivityClass {
                 String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
-                return jsonResp.getString("success");
+                return jsonResp.getString("result");
 
             }
             catch (JSONException jsonEx)
@@ -621,16 +636,52 @@ public class ScheduleActivity extends BaseActivityClass {
             }
         }
 
+        private boolean PlannedWholeWeek()
+        {
+            for(int i = 0; i < days.length; i++)
+            {
+                String done = Utils.getDefaults(days[i], mContext);
+                if(done == null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        private GoogleAchievements.Achievements DestringifyDay(String day)
+        {
+            if(day.toLowerCase().equals("monday"))
+                return GoogleAchievements.Achievements.MONDAY;
+            else if(day.toLowerCase().equals("tuesday"))
+                return GoogleAchievements.Achievements.TUESDAY;
+            else if(day.toLowerCase().equals("wednesday"))
+                return GoogleAchievements.Achievements.WEDNESDAY;
+            else if(day.toLowerCase().equals("thursday"))
+                return GoogleAchievements.Achievements.THURSDAY;
+            else if(day.toLowerCase().equals("friday"))
+                return GoogleAchievements.Achievements.FRIDAY;
+            else if(day.toLowerCase().equals("saturday"))
+                return GoogleAchievements.Achievements.SATURDAY;
+            else
+                return GoogleAchievements.Achievements.SUNDAY;
+        }
+
         @Override
         protected void onPostExecute(final String objects) {
 
             mEditScheduleTask = null;
-            if(objects.isEmpty())
+            if(objects.isEmpty() || objects.equals("fail"))
             {
                 showProgress(false);
             }
             else
             {
+                Utils.setDefaults(mDay, "done", mContext);
+                GoogleAchievements.unlockAchievement(DestringifyDay(mDay));
+
+                if (PlannedWholeWeek())
+                    GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.PLAN_WEEK);
+
                 showProgress(false);
             }
 

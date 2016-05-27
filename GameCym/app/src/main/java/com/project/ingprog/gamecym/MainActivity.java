@@ -236,7 +236,7 @@ public class MainActivity extends BaseActivityClass {
                 String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
-                return jsonResp.getString("success");
+                return jsonResp.getString("result");
 
             }
             catch (JSONException jsonEx)
@@ -260,6 +260,7 @@ public class MainActivity extends BaseActivityClass {
             }
             else
             {
+                GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.FIRST_EXERCISE);
 
                 //save stuff to player prefs
                 String last_day = Utils.getDefaults("last_ex_day", mContext);
@@ -379,7 +380,7 @@ public class MainActivity extends BaseActivityClass {
         @Override
         protected void onPostExecute(final String objects) {
 
-            LinearLayout ll = (LinearLayout)(findViewById(R.id.linearLayout));
+            LinearLayout ll = (LinearLayout)(findViewById(R.id.linearLayoutExs));
 
             mGetDayScheduleTask = null;
             if(objects.isEmpty())

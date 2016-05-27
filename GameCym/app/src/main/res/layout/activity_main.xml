@@ -37,6 +37,12 @@
 
             <include layout="@layout/content_main" />
 
+        <LinearLayout
+            android:id="@+id/linearLayoutExs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
 
         </LinearLayout>
 
