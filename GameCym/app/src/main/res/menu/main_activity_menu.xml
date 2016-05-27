@@ -6,6 +6,15 @@
         android:title="View Schedule"
         app:showAsAction="never"/>
 
+
+    <item android:id="@+id/action_leaderboard"
+        android:title="Leaderboard"
+        app:showAsAction="never"/>
+
+    <item android:id="@+id/action_achievements"
+        android:title="Achievement"
+        app:showAsAction="never"/>
+
     <item
         android:id="@+id/action_bio"
         android:title="@string/edit_bio"

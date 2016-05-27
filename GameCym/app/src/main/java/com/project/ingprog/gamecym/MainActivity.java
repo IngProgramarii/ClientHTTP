@@ -19,6 +19,8 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.gms.games.Games;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -107,6 +109,17 @@ public class MainActivity extends BaseActivityClass {
 
             case R.id.action_viewschedule:
                 goToScheduleActivity();
+                return true;
+
+            case R.id.action_achievements:
+                startActivityForResult(Games.Achievements.getAchievementsIntent(mGoogleApiClient),
+                        1);
+                return true;
+
+            case R.id.action_leaderboard:
+                String leaderboardId = MainActivity.this.getString(R.string.XpEarnedLeaderboardID);
+                startActivityForResult(Games.Leaderboards.getLeaderboardIntent(mGoogleApiClient,
+                        leaderboardId), 0);
                 return true;
 
 
@@ -236,16 +249,18 @@ public class MainActivity extends BaseActivityClass {
                 String resp = post(address, sending.toString());
                 JSONObject jsonResp = new JSONObject(AESEncryption.decrypt(key, resp));
 
+                if(jsonResp.getString("result").equals("fail"))
+                    return "";
                 return jsonResp.getString("result");
 
             }
             catch (JSONException jsonEx)
             {
-                return  "fail" ;
+                return  "" ;
             }
             catch (IOException ioEx)
             {
-                return "fail";
+                return "";
             }
         }
 
@@ -254,13 +269,17 @@ public class MainActivity extends BaseActivityClass {
 
             //TODO: award completed achievements
 
-            if(objects.isEmpty() || objects.equals("fail"))
+            if(objects.isEmpty())
             {
                 showProgress(false);
             }
             else
             {
                 GoogleAchievements.unlockAchievement(GoogleAchievements.Achievements.FIRST_EXERCISE);
+
+                int score = Integer.parseInt(objects);
+                Games.Leaderboards.submitScore(mGoogleApiClient,
+                        MainActivity.this.getString(R.string.XpEarnedLeaderboardID), score);
 
                 //save stuff to player prefs
                 String last_day = Utils.getDefaults("last_ex_day", mContext);
