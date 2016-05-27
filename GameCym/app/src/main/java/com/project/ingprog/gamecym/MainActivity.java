@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -251,19 +252,54 @@ public class MainActivity extends BaseActivityClass {
         @Override
         protected void onPostExecute(final String objects) {
 
-            //TODO: save stuff to player prefs
             //TODO: award completed achievements
-            //TODO: reload the page
-            if(objects.isEmpty())
+
+            if(objects.isEmpty() || objects.equals("fail"))
             {
-                //((TextView)(findViewById(R.id.ScheduleText))).setText("");
                 showProgress(false);
             }
             else
             {
-                //((TextView)(findViewById(R.id.ScheduleText))).setText("");
+
+                //save stuff to player prefs
+                String last_day = Utils.getDefaults("last_ex_day", mContext);
+                String nr_cons_ex = (Utils.getDefaults("nr_cons_ex", mContext));
+
+                if(last_day != null && nr_cons_ex != null)
+                {
+                    int nr_ex = Integer.parseInt(nr_cons_ex);
+                    long current_date = System.currentTimeMillis();
+                    long last_date = Long.parseLong(last_day);
+                    long diff = current_date - last_date;
+                    if (diff >= 48*60*60*1000)
+                    {
+                        //reset the whole thing
+                        Utils.setDefaults("last_ex_day", Long.toString(System.currentTimeMillis()), mContext);
+                        Utils.setDefaults("nr_cons_ex", "1", mContext);
+                    }
+                    else if(diff >= 24*60*60*1000) {
+                        nr_ex++;
+                        Utils.setDefaults("last_ex_day", Long.toString(System.currentTimeMillis()), mContext);
+                        Utils.setDefaults("nr_cons_ex", Integer.toString(nr_ex), mContext);
+
+                        //// TODO: 27-May-16  if its the case add a week of exercises done ach
+                    }
+                }
+                else {
+                    //TODO: award first completed ex award
+
+                    Utils.setDefaults("last_ex_day", Long.toString(System.currentTimeMillis()), mContext);
+                    Utils.setDefaults("nr_cons_ex", "1", mContext);
+                }
                 showProgress(false);
             }
+
+            //reload the page
+            GetDayAvailableSchedule gdas = new GetDayAvailableSchedule(
+                    mUserId, GetCurrentDay(), mContext
+            );
+
+            gdas.execute((Void)null);
 
         }
 
@@ -386,6 +422,9 @@ public class MainActivity extends BaseActivityClass {
                                    {
                                        Button bttn = (Button)view;
                                        showProgress(true);
+
+                                       ViewGroup parent = (ViewGroup)bttn.getParent();
+                                       parent.removeAllViews();
 
                                        SendDoneSchedule sds = new SendDoneSchedule(mUserId,
                                                mDay, Integer.parseInt(bttn.getTag().toString()),

@@ -26,6 +26,11 @@ public class Utils {
         return preferences.getString(key, null);
     }
 
+    public static String getDefaults(String key, String def, Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.getString(key, def);
+    }
+
     public static void DebugLog(String message)
     {
         Log.d(TAG, message);

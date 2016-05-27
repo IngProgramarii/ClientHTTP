@@ -624,7 +624,6 @@ public class ScheduleActivity extends BaseActivityClass {
         @Override
         protected void onPostExecute(final String objects) {
 
-            //TODO: implement proper post execute code
             mEditScheduleTask = null;
             if(objects.isEmpty())
             {
